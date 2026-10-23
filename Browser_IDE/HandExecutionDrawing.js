@@ -223,8 +223,8 @@ class MemoryEntry {
 
 class HandExecutionDrawing {
     constructor({valueMode = 'append', stackMode = 'append', heapMode = 'append', width = 550, height = 450} = {}) {
-        if (!(width === parseInt(width))) width = 550;
-        if (!(height === parseInt(height))) height = 450;
+        if (!(width === parseInt(width)) || width <= 0) width = 550;
+        if (!(height === parseInt(height)) || height <= 0) height = 450;
 
         this.minWidth = width;
         this.minHeight = height;
@@ -498,8 +498,8 @@ class HandExecutionDrawing {
                 this._handlePointerRemoval(variable.pointerLine, this.stackMode);
             }
 
-            // Insert spacing
-            if (valuesElem.childNodes.length > (variable.columns ? 1 : 0))
+            // Insert spacing; If appending is not intended, then do not add space (realtime)
+            if (this.valueMode == "append" && valuesElem.childNodes.length > (variable.columns ? 1 : 0))
                 valuesElem.insertAdjacentHTML('beforeend', variable.columns ? "<br/>" : " ");
 
             // Create new value (Pointer or Primitive)

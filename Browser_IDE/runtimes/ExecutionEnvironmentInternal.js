@@ -134,8 +134,9 @@ class ExecutionEnvironmentInternal {
             handExecutionDrawing.valueMode = ops.modes.valueMode;
             handExecutionDrawing.stackMode = ops.modes.stackMode;
             handExecutionDrawing.heapMode = ops.modes.heapMode;
-            handExecutionDrawing.width.transition(ops.width);
-            handExecutionDrawing.height.transition(ops.height);
+            if (ops.width > 0) handExecutionDrawing.minWidth = ops.width;
+            if (ops.height > 0) handExecutionDrawing.minHeight = ops.height;
+            handExecutionDrawing.updateSize();
         }
         else if (!runtimeOptions.showHandExecution && handExecutionDrawing) {
             handExecutionDrawing.container.remove();
