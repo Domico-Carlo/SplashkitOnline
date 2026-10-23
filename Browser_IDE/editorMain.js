@@ -806,6 +806,69 @@ let runtimeOptions = {
     }
 };
 
+// ------ Runtime Settings UI ------
+
+function applyRuntimeOptions(){
+    runtimeOptions.showHandExecution = SKO.handExecutionMode != "";
+    runtimeOptions.handExecutionSettings.modes = handExecutionModes[SKO.handExecutionMode];
+
+    executionEnviroment.updateRuntimeOptions(runtimeOptions);
+    updateButtons();
+}
+
+function saveSettingToURL(key, value){
+    let url = new URL(window.location.href);
+    url.searchParams.set(key, value);
+    // replaceState so toggling settings doesn't spam the back-button history
+    window.history.replaceState(null, '', url.toString());
+}
+
+let settingsModal = null;
+
+function showSettingsModal(){
+    if (settingsModal == null){
+        settingsModal = createModal("settingsModal", "Settings", [
+            '<label><input type="checkbox" id="setEnableDebugging"> Enable debugging (takes effect on next build)</label><br>',
+            '<label><input type="checkbox" id="setEnableSingleStepping"> Single stepping</label><br>',
+            '<label><input type="checkbox" id="setForceStepLineHighlighting"> Automatic stepping (highlight each line)</label><br>',
+            '<label>Step delay (ms): <input type="number" min="0" step="10" id="setStepDelay" style="width:6em"></label><br>',
+            '<label>Hand execution: <select id="setHandExecutionMode">',
+            '  <option value="">Off</option>',
+            '  <option value="faithful">Faithful</option>',
+            '  <option value="clean">Clean</option>',
+            '  <option value="realtime">Realtime</option>',
+            '</select></label>',
+        ].join("\n"), {
+            label: "Apply",
+            callback: function(){
+                runtimeOptions.enableDebugging           = document.getElementById("setEnableDebugging").checked;
+                runtimeOptions.enableSingleStepping      = document.getElementById("setEnableSingleStepping").checked;
+                runtimeOptions.forceStepLineHighlighting = document.getElementById("setForceStepLineHighlighting").checked;
+                runtimeOptions.stepLineHighlightingDelay = Number(document.getElementById("setStepDelay").value) || 0;
+                SKO.handExecutionMode                    = document.getElementById("setHandExecutionMode").value;
+
+                saveSettingToURL("enableDebugging",           runtimeOptions.enableDebugging ? "on" : "off");
+                saveSettingToURL("enableSingleStepping",      runtimeOptions.enableSingleStepping ? "on" : "off");
+                saveSettingToURL("forceStepLineHighlighting", runtimeOptions.forceStepLineHighlighting ? "on" : "off");
+                saveSettingToURL("stepLineHighlightingDelay", runtimeOptions.stepLineHighlightingDelay);
+                saveSettingToURL("handExecutionMode",         SKO.handExecutionMode);
+
+                applyRuntimeOptions();
+                settingsModal.hide();
+            }
+        });
+    }
+
+    // populate with current values each time it opens
+    document.getElementById("setEnableDebugging").checked           = runtimeOptions.enableDebugging;
+    document.getElementById("setEnableSingleStepping").checked      = runtimeOptions.enableSingleStepping;
+    document.getElementById("setForceStepLineHighlighting").checked = runtimeOptions.forceStepLineHighlighting;
+    document.getElementById("setStepDelay").value                   = runtimeOptions.stepLineHighlightingDelay;
+    document.getElementById("setHandExecutionMode").value           = SKO.handExecutionMode;
+
+    settingsModal.show();
+}
+
 // Functions to disable/enable code-execution
 
 function disableCodeExecution(){
@@ -1210,6 +1273,7 @@ function setupIDEButtonEvents() {
 
     // Add events for the project buttons
     document.getElementById("UploadProject").addEventListener("click", () => document.getElementById("projectuploader").click());
+    document.getElementById("IDESettings").addEventListener("click", showSettingsModal);
 
     setupProjectButton("DownloadProject", downloadProject);
     setupProjectButton("NewProject", async function () {

@@ -21,6 +21,9 @@ let SKO = (function(){
     }
 
     function ensureNumber(param, _default){
+        // Number("") is 0, so treat empty params (e.g "handExecutionWidth=") as missing
+        if (param == null || String(param).trim() == "")
+            return _default;
         param = Number(param);
         if (Number.isNaN(param))
             return _default;
